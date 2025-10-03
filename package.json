@@ -1,0 +1,64 @@
+{
+  "name": "markdown-preview-panel",
+  "displayName": "Markdown Preview Panel",
+  "description": "Display markdown preview in extension panel",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "markdownPreviewContainer",
+          "title": "Markdown Preview",
+          "icon": "$(markdown)"
+        }
+      ]
+    },
+    "views": {
+      "markdownPreviewContainer": [
+        {
+          "id": "markdownPreview",
+          "name": "",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "markdownPreview.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "markdownPreview.refresh",
+          "when": "view == markdownPreview",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "markdown-it": "^13.0.1"
+  }
+}
