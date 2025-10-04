@@ -38,7 +38,7 @@ npm run watch
 
 ```bash
 # VSCodeのCLIを使ってVSIXをインストール
-code --install-extension releases/markdown-preview-panel-0.0.1.vsix
+code --install-extension releases/markdown-previewer-in-extension-panel-0.0.1.vsix
 ```
 
 VSCodeのCLIが未設定の場合は、VSCodeのコマンドパレットで「Shell Command: Install 'code' command in PATH」を実行してください。
@@ -47,7 +47,7 @@ GitHubリリースで自動ビルドされたVSIXを利用する場合は、先�
 
 ### VSIXファイルからインストールする場合
 
-1. [最新リリース](https://github.com/NaokiIshimura/vscode-markdown-sidebar-panel-previewer/releases/latest)に公開される「Release VSIX」ワークフローの自動ビルド成果物（`markdown-sidebar-panel-previewer-x.y.z.vsix`）をダウンロード
+1. [最新リリース](https://github.com/NaokiIshimura/vscode-markdown-sidebar-panel-previewer/releases/latest)に公開される「Release VSIX」ワークフローの自動ビルド成果物（`markdown-previewer-in-extension-panel-x.y.z.vsix`）をダウンロード
 2. コマンドパレット（`Ctrl+Shift+P`）で「Extensions: Install from VSIX...」を実行
 3. ダウンロードしたVSIXファイルを選択してインストール
 4. VSCodeを再読み込みすると拡張機能が有効になります
