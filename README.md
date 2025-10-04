@@ -10,8 +10,6 @@ English guide for the VS Code extension that keeps a live Markdown preview docke
 - Manual `Refresh` command to force a redraw when needed
 - Flexible layout: keep it beside the editor or drag it into the panel for a larger view
 
-![Sidebar preview demo](assets/movie.gif)
-
 ## Requirements
 - Visual Studio Code 1.74.0 or later
 - Markdown files (`.md`) located in the active workspace
