@@ -179,7 +179,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     </style>
 </head>
 <body>
-    <p>マークダウンファイルを開いてプレビューを表示してください</p>
+    <p>Open a Markdown file to display the preview.</p>
 </body>
 </html>`;
     }
