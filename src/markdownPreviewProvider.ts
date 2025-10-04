@@ -1,5 +1,11 @@
 import * as vscode from 'vscode';
 import * as MarkdownIt from 'markdown-it';
+import * as path from 'path';
+
+interface MarkdownRenderEnv {
+    webview?: vscode.Webview;
+    documentUri?: vscode.Uri;
+}
 
 export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'markdownPreview';
@@ -12,6 +18,24 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             linkify: true,
             typographer: true
         });
+
+        const defaultImageRender = this._md.renderer.rules.image ?? ((tokens, idx, options, env, self) => {
+            return self.renderToken(tokens, idx, options);
+        });
+
+        this._md.renderer.rules.image = (tokens, idx, options, env, self) => {
+            const token = tokens[idx];
+            const src = token.attrGet('src');
+
+            if (src) {
+                const resolvedSrc = this.resolveImageSource(src, env as MarkdownRenderEnv);
+                if (resolvedSrc) {
+                    token.attrSet('src', resolvedSrc);
+                }
+            }
+
+            return defaultImageRender(tokens, idx, options, env, self);
+        };
     }
 
     public resolveWebviewView(
@@ -24,7 +48,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.options = {
             enableScripts: true,
-            localResourceRoots: [this._extensionUri]
+            localResourceRoots: this.getLocalResourceRoots()
         };
 
         this.updatePreview();
@@ -44,32 +68,131 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         if (!activeEditor) {
             console.log('No active editor');
             this._view.title = '';
-            this._view.webview.html = this.getEmptyHtml();
+            this._view.webview.html = this.getEmptyHtml(this._view.webview);
             return;
         }
 
         if (activeEditor.document.languageId !== 'markdown') {
             console.log('Active editor is not markdown:', activeEditor.document.languageId);
             this._view.title = '';
-            this._view.webview.html = this.getEmptyHtml();
+            this._view.webview.html = this.getEmptyHtml(this._view.webview);
             return;
         }
 
         console.log('Updating markdown preview');
         const fileName = activeEditor.document.fileName.split('/').pop() || 'Untitled';
         this._view.title = fileName;
-        
+
+        this._view.webview.options = {
+            enableScripts: true,
+            localResourceRoots: this.getLocalResourceRoots(activeEditor.document.uri)
+        };
+
         const markdownContent = activeEditor.document.getText();
-        const htmlContent = this._md.render(markdownContent);
-        this._view.webview.html = this.getWebviewContent(htmlContent);
+        const env: MarkdownRenderEnv = {
+            webview: this._view.webview,
+            documentUri: activeEditor.document.uri
+        };
+        const htmlContent = this._md.render(markdownContent, env);
+        this._view.webview.html = this.getWebviewContent(this._view.webview, htmlContent);
     }
 
-    private getWebviewContent(htmlContent: string): string {
+    private resolveImageSource(src: string, env: MarkdownRenderEnv): string | undefined {
+        const webview = env.webview;
+        const documentUri = env.documentUri;
+
+        if (!webview || !documentUri) {
+            return undefined;
+        }
+
+        if (/^(https?:|data:)/i.test(src)) {
+            return src;
+        }
+
+        if (/^file:/i.test(src)) {
+            try {
+                const fileUri = vscode.Uri.parse(src);
+                if (fileUri.scheme === 'file') {
+                    return webview.asWebviewUri(fileUri).toString();
+                }
+            } catch (error) {
+                console.warn('Failed to parse file URI for image src:', error);
+                return src;
+            }
+        }
+
+        if (documentUri.scheme !== 'file') {
+            return src;
+        }
+
+        const fragmentSplit = src.split('#');
+        const pathWithQuery = fragmentSplit.shift() ?? '';
+        const fragment = fragmentSplit.length > 0 ? '#' + fragmentSplit.join('#') : '';
+
+        const querySplit = pathWithQuery.split('?');
+        const relativePath = querySplit.shift() ?? '';
+        const query = querySplit.length > 0 ? '?' + querySplit.join('?') : '';
+
+        if (!relativePath) {
+            return src;
+        }
+
+        const docDir = path.dirname(documentUri.fsPath);
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(documentUri);
+
+        const ensureWorkspacePath = (inputPath: string): string | undefined => {
+            if (!workspaceFolder) {
+                const workspaceFolders = vscode.workspace.workspaceFolders;
+                if (!workspaceFolders || workspaceFolders.length === 0) {
+                    return undefined;
+                }
+                return path.join(workspaceFolders[0].uri.fsPath, inputPath);
+            }
+            return path.join(workspaceFolder.uri.fsPath, inputPath);
+        };
+
+        const normalizedRelativePath = relativePath.replace(/^[/\\]+/, '');
+
+        let diskPath: string | undefined;
+        if (relativePath.startsWith('/') || relativePath.startsWith('\\')) {
+            diskPath = ensureWorkspacePath(normalizedRelativePath);
+        }
+
+        if (!diskPath) {
+            diskPath = path.isAbsolute(relativePath)
+                ? relativePath
+                : path.resolve(docDir, relativePath);
+        }
+
+        if (!diskPath) {
+            return src;
+        }
+
+        const fileUri = vscode.Uri.file(diskPath);
+        const webviewUri = webview.asWebviewUri(fileUri).toString();
+
+        return `${webviewUri}${query}${fragment}`;
+    }
+
+    private getLocalResourceRoots(documentUri?: vscode.Uri): vscode.Uri[] {
+        const roots = [this._extensionUri];
+        const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+        for (const folder of workspaceFolders) {
+            roots.push(folder.uri);
+        }
+        if (documentUri?.scheme === 'file') {
+            roots.push(vscode.Uri.file(path.dirname(documentUri.fsPath)));
+        }
+        return roots;
+    }
+
+    private getWebviewContent(webview: vscode.Webview, htmlContent: string): string {
         return `<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: http: data:; style-src ${webview.cspSource} 'unsafe-inline';">
     <title>Markdown Preview</title>
     <style>
         body {
@@ -160,12 +283,13 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 </html>`;
     }
 
-    private getEmptyHtml(): string {
+    private getEmptyHtml(webview: vscode.Webview): string {
         return `<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: http: data:; style-src ${webview.cspSource} 'unsafe-inline';">
     <title>Markdown Preview</title>
     <style>
         body {

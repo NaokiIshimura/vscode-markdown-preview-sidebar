@@ -1,5 +1,7 @@
 # Markdown Previewer in Extension Panel
 
+![demo](assets/demo.gif)
+
 English guide for the VS Code extension that keeps a live Markdown preview docked in the sidebar.
 
 ## Features
