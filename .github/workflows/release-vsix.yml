@@ -1,6 +1,9 @@
 name: Release VSIX
 
 on:
+  push:
+    branches:
+      - main
   release:
     types: [published]
   workflow_dispatch:
@@ -38,7 +41,15 @@ jobs:
           mkdir -p releases
           vsce package --allow-missing-repository --skip-license --out releases/markdown-preview-panel-${VERSION}.vsix
 
+      - name: Upload VSIX artifact
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: markdown-preview-panel-${{ env.VERSION }}
+          path: releases/markdown-preview-panel-${{ env.VERSION }}.vsix
+
       - name: Upload VSIX asset
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: releases/markdown-preview-panel-${{ env.VERSION }}.vsix
