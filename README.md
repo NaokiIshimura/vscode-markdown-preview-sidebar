@@ -1,27 +1,27 @@
 # Markdown Previewer in Extension Panel
 
-VS Code のサイドバーに Markdown プレビューを固定表示できる拡張機能です。執筆中のノートやドキュメントを常に視界に入れながら編集できます。
+English guide for the VS Code extension that keeps a live Markdown preview docked in the sidebar. 日本語の説明は [README-JA.md](README-JA.md) を参照してください。
 
-## 主な特徴
-- サイドバーに常設する軽量 Markdown プレビュー
-- 編集内容を自動で追従し、VS Code のテーマに即座に適用
-- 手動リフレッシュボタンで確実に再描画
-- テキストのみ・プレビュー併用のどちらでも作業しやすい構成
+## Features
+- Lightweight Markdown preview that stays pinned to the VS Code sidebar
+- Live updates that track the active editor and inherit your current color theme
+- Manual `Refresh` command to force a redraw when needed
+- Flexible layout: keep it beside the editor or drag it into the panel for a larger view
 
-## 動作条件
-- Visual Studio Code 1.74.0 以降
-- Markdown ファイル（`.md`）
+## Requirements
+- Visual Studio Code 1.74.0 or later
+- Markdown files (`.md`) located in the active workspace
 
-## 使い方
-1. 任意の Markdown ファイルを開くと、同じワークスペース内の「Markdown Preview」ビューに自動的に内容が表示されます。
-2. エディタ側でテキストを編集するとプレビューがリアルタイムで更新されます。
-3. 強制更新したい場合はビュー右上の `Refresh` ボタンを押します。
-4. プレビューを大型表示したいときは、ビュータブをドラッグしてパネルに移動できます。
+## Usage
+1. Open any Markdown file and the "Markdown Preview" view will render it automatically.
+2. Continue editing in the text editor; the preview updates in real time.
+3. Use the `Refresh` button in the view toolbar if you want to manually trigger an update.
+4. Drag the view tab into the panel area when you prefer a wider preview.
 
-## ヒントと既知の制限
-- 画像やリンクは Markdown の解釈結果をそのまま表示します。ローカルパス画像は VS Code が解決できる相対/絶対パスのみ対応します。
-- 非 Markdown ファイルがアクティブな間は、ビューに案内メッセージを表示します。
-- 表示が崩れる場合は VS Code のカラー テーマを切り替えるとリフレッシュされることがあります。
+## Tips & Known Limitations
+- Images and links render exactly as Markdown resolves them; local paths must be reachable from VS Code.
+- When a non-Markdown document is active, the view shows a helper message instead of stale content.
+- If styling appears off, switching the VS Code color theme can reset the view’s CSS variables.
 
-## フィードバック
-不具合報告や機能リクエストは GitHub Issues からお寄せください。スクリーンショットや再現手順を添えると解決がスムーズになります。
+## Feedback
+Please report bugs or request features via GitHub Issues. Screenshots and concise reproduction steps help us respond quickly.
