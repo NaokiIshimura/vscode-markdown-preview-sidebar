@@ -68,7 +68,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
-          name: Markdown Sidebar Panel Previewer v${{ env.VERSION }}
+          name: Markdown Previewer in Extension Panel v${{ env.VERSION }}
           draft: false
           prerelease: false
           files: releases/markdown-previewer-in-extension-panel-${{ env.VERSION }}.vsix
