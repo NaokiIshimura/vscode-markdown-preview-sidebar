@@ -1,6 +1,6 @@
 # Markdown Previewer in Extension Panel
 
-English guide for the VS Code extension that keeps a live Markdown preview docked in the sidebar. 日本語の説明は [README-JA.md](README-JA.md) を参照してください。
+English guide for the VS Code extension that keeps a live Markdown preview docked in the sidebar.
 
 ## Features
 - Lightweight Markdown preview that stays pinned to the VS Code sidebar
