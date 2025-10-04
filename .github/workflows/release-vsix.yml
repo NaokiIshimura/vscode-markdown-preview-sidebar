@@ -41,11 +41,20 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "TAG=v$VERSION" >> "$GITHUB_ENV"
 
       - name: Package VSIX
         run: |
           mkdir -p releases
           vsce package --allow-missing-repository --skip-license --out releases/markdown-previewer-in-extension-panel-${VERSION}.vsix
+
+      - name: Upload VSIX asset (release event)
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: releases/markdown-previewer-in-extension-panel-${{ env.VERSION }}.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload VSIX artifact
         if: github.event_name != 'release'
@@ -54,10 +63,14 @@ jobs:
           name: markdown-previewer-in-extension-panel-${{ env.VERSION }}
           path: releases/markdown-previewer-in-extension-panel-${{ env.VERSION }}.vsix
 
-      - name: Upload VSIX asset
-        if: github.event_name == 'release'
+      - name: Upload VSIX asset (push/manual)
+        if: github.event_name != 'release'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG }}
+          name: Markdown Sidebar Panel Previewer v${{ env.VERSION }}
+          draft: false
+          prerelease: false
           files: releases/markdown-previewer-in-extension-panel-${{ env.VERSION }}.vsix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
