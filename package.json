@@ -1,5 +1,6 @@
 {
   "name": "markdown-preview-panel",
+  "publisher": "nacn",
   "displayName": "Markdown Preview Panel",
   "description": "Display markdown preview in extension panel",
   "version": "0.0.1",
