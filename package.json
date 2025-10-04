@@ -1,15 +1,20 @@
 {
   "name": "markdown-previewer-in-extension-panel",
   "publisher": "nacn",
-  "displayName": "Markdown Previewer in Extension Panel",
-  "description": "Markdown preview in the VS Code sidebar or panel.",
-  "version": "0.0.2",
+  "displayName": "Markdown Preview Panel",
+  "description": "Display markdown preview in extension panel",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NaokiIshimura/vscode-markdown-previewer-in-extension-panel.git"
+  },
+  "icon": "assets/icon-128.png",
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
@@ -61,9 +66,5 @@
   },
   "dependencies": {
     "markdown-it": "^13.0.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/NaokiIshimura/vscode-markdown-previewer-in-extension-panel.git"
   }
 }
