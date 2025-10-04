@@ -2,10 +2,10 @@
 
 ![demo](assets/demo.gif)
 
-English guide for the VS Code extension that keeps a live Markdown preview docked in the sidebar.
+Display markdown preview in extension panel.
 
 ## Features
-- Lightweight Markdown preview that stays pinned to the VS Code sidebar
+- Lightweight Markdown preview that stays pinned to the VS Code sidebar or panel
 - Live updates that track the active editor and inherit your current color theme
 - Manual `Refresh` command to force a redraw when needed
 - Flexible layout: keep it beside the editor or drag it into the panel for a larger view
