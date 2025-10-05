@@ -43,6 +43,16 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "markdownPreview.pin",
+        "title": "Pin",
+        "icon": "$(pin)"
+      },
+      {
+        "command": "markdownPreview.unpin",
+        "title": "Unpin",
+        "icon": "$(pinned)"
+      },
+      {
         "command": "markdownPreview.togglePin",
         "title": "Toggle Pin"
       }
@@ -55,16 +65,14 @@
           "group": "navigation"
         },
         {
-          "command": "markdownPreview.togglePin",
+          "command": "markdownPreview.pin",
           "when": "view == markdownPreview && !markdownPreview:isPinned",
-          "group": "navigation@1",
-          "icon": "$(pin)"
+          "group": "navigation@1"
         },
         {
-          "command": "markdownPreview.togglePin",
+          "command": "markdownPreview.unpin",
           "when": "view == markdownPreview && markdownPreview:isPinned",
-          "group": "navigation@1",
-          "icon": "$(pinned)"
+          "group": "navigation@1"
         }
       ]
     }

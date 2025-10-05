@@ -121,11 +121,18 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
     public async togglePin(): Promise<void> {
         if (this._isPinned) {
-            this.clearPin();
-            await this.updatePreview();
+            await this.unpin();
             return;
         }
 
+        await this.pin();
+    }
+
+    public isPinnedDocument(uri: vscode.Uri): boolean {
+        return this._isPinned && !!this._pinnedUri && this._pinnedUri.toString() === uri.toString();
+    }
+
+    public async pin(): Promise<void> {
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor || activeEditor.document.languageId !== 'markdown') {
             void vscode.window.showInformationMessage('ピン留めはMarkdownファイルでのみ使用できます。');
@@ -139,8 +146,13 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         await this.updatePreview();
     }
 
-    public isPinnedDocument(uri: vscode.Uri): boolean {
-        return this._isPinned && !!this._pinnedUri && this._pinnedUri.toString() === uri.toString();
+    public async unpin(): Promise<void> {
+        if (!this._isPinned) {
+            return;
+        }
+
+        this.clearPin();
+        await this.updatePreview();
     }
 
     private clearPin(): void {
@@ -176,12 +188,12 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
         if (this._isPinned) {
             const label = fileName ?? this._pinnedFileName ?? '';
-            this._view.title = label ? `$(pinned) ${label}` : '$(pinned)';
+            this._view.title = label;
             return;
         }
 
         const label = fileName ?? '';
-        this._view.title = label ? `$(pin) ${label}` : '$(pin)';
+        this._view.title = label;
     }
 
     private resolveImageSource(src: string, env: MarkdownRenderEnv): string | undefined {
