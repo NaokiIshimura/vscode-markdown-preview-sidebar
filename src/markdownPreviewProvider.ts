@@ -176,11 +176,12 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
         if (this._isPinned) {
             const label = fileName ?? this._pinnedFileName ?? '';
-            this._view.title = label ? `$(pin) ${label}` : '$(pin)';
+            this._view.title = label ? `$(pinned) ${label}` : '$(pinned)';
             return;
         }
 
-        this._view.title = fileName ?? '';
+        const label = fileName ?? '';
+        this._view.title = label ? `$(pin) ${label}` : '$(pin)';
     }
 
     private resolveImageSource(src: string, env: MarkdownRenderEnv): string | undefined {

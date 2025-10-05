@@ -64,7 +64,7 @@
           "command": "markdownPreview.togglePin",
           "when": "view == markdownPreview && markdownPreview:isPinned",
           "group": "navigation@1",
-          "icon": "$(pin-filled)"
+          "icon": "$(pinned)"
         }
       ]
     }
