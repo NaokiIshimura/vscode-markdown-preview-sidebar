@@ -14,6 +14,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     private _isPinned = false;
     private _pinnedUri?: vscode.Uri;
     private _pinnedFileName?: string;
+    private _canPin = false;
 
     constructor(private readonly _extensionUri: vscode.Uri) {
         this._md = new MarkdownIt({
@@ -54,6 +55,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             localResourceRoots: this.getLocalResourceRoots()
         };
 
+        this.updateCanPinContext();
         this.updatePinContext();
         void this.updatePreview();
     }
@@ -83,6 +85,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             const activeEditor = vscode.window.activeTextEditor;
             if (!activeEditor) {
                 console.log('No active editor');
+                this.setCanPin(false);
                 this.renderEmptyState();
                 return;
             }
@@ -94,6 +97,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             if (this._isPinned) {
                 this.clearPin();
             }
+            this.setCanPin(false);
             this.renderEmptyState();
             return;
         }
@@ -116,6 +120,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             documentUri: targetDocument.uri
         };
         const htmlContent = this._md.render(markdownContent, env);
+        this.setCanPin(true);
         this._view.webview.html = this.getWebviewContent(this._view.webview, htmlContent);
     }
 
@@ -169,6 +174,18 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         void vscode.commands.executeCommand('setContext', 'markdownPreview:isPinned', this._isPinned);
     }
 
+    private setCanPin(value: boolean): void {
+        if (this._canPin === value) {
+            return;
+        }
+        this._canPin = value;
+        this.updateCanPinContext();
+    }
+
+    private updateCanPinContext(): void {
+        void vscode.commands.executeCommand('setContext', 'markdownPreview:canPin', this._canPin);
+    }
+
     private renderEmptyState(): void {
         if (!this._view) {
             return;
@@ -178,6 +195,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             enableScripts: true,
             localResourceRoots: this.getLocalResourceRoots()
         };
+        this.setCanPin(false);
         this._view.webview.html = this.getEmptyHtml(this._view.webview);
     }
 
