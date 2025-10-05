@@ -3,7 +3,7 @@
   "publisher": "nacn",
   "displayName": "Markdown Preview in Extension Panel",
   "description": "Display markdown preview in extension panel",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "icon": "assets/icon-128.png",
   "engines": {
     "vscode": "^1.74.0"
