@@ -3,7 +3,7 @@
   "publisher": "nacn",
   "displayName": "Markdown Preview in Extension Panel",
   "description": "Display markdown preview in extension panel",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "icon": "assets/icon-128.png",
   "engines": {
     "vscode": "^1.74.0"
@@ -45,7 +45,8 @@
       {
         "command": "markdownPreview.pin",
         "title": "Pin",
-        "icon": "$(pin)"
+        "icon": "$(pin)",
+        "enablement": "markdownPreview:canPin"
       },
       {
         "command": "markdownPreview.unpin",
@@ -61,7 +62,7 @@
       "view/title": [
         {
           "command": "markdownPreview.pin",
-          "when": "view == markdownPreview && !markdownPreview:isPinned",
+          "when": "view == markdownPreview && markdownPreview:canPin && !markdownPreview:isPinned",
           "group": "navigation"
         },
         {
