@@ -41,6 +41,10 @@
         "command": "markdownPreview.refresh",
         "title": "Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "markdownPreview.togglePin",
+        "title": "Toggle Pin"
       }
     ],
     "menus": {
@@ -49,6 +53,18 @@
           "command": "markdownPreview.refresh",
           "when": "view == markdownPreview",
           "group": "navigation"
+        },
+        {
+          "command": "markdownPreview.togglePin",
+          "when": "view == markdownPreview && !markdownPreview:isPinned",
+          "group": "navigation@1",
+          "icon": "$(pin)"
+        },
+        {
+          "command": "markdownPreview.togglePin",
+          "when": "view == markdownPreview && markdownPreview:isPinned",
+          "group": "navigation@1",
+          "icon": "$(pin-filled)"
         }
       ]
     }

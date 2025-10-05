@@ -11,6 +11,9 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'markdownPreview';
     private _view?: vscode.WebviewView;
     private _md: MarkdownIt;
+    private _isPinned = false;
+    private _pinnedUri?: vscode.Uri;
+    private _pinnedFileName?: string;
 
     constructor(private readonly _extensionUri: vscode.Uri) {
         this._md = new MarkdownIt({
@@ -51,50 +54,133 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             localResourceRoots: this.getLocalResourceRoots()
         };
 
-        this.updatePreview();
+        this.updatePinContext();
+        void this.updatePreview();
     }
 
     public refresh() {
-        this.updatePreview();
+        void this.updatePreview();
     }
 
-    public updatePreview() {
+    public async updatePreview(): Promise<void> {
         if (!this._view) {
             console.log('No webview available');
             return;
         }
 
-        const activeEditor = vscode.window.activeTextEditor;
-        if (!activeEditor) {
-            console.log('No active editor');
-            this._view.title = '';
-            this._view.webview.html = this.getEmptyHtml(this._view.webview);
-            return;
+        let targetDocument: vscode.TextDocument | undefined;
+
+        if (this._isPinned && this._pinnedUri) {
+            try {
+                targetDocument = await vscode.workspace.openTextDocument(this._pinnedUri);
+            } catch (error) {
+                console.warn('Failed to open pinned document:', error);
+                this.clearPin();
+            }
         }
 
-        if (activeEditor.document.languageId !== 'markdown') {
-            console.log('Active editor is not markdown:', activeEditor.document.languageId);
-            this._view.title = '';
-            this._view.webview.html = this.getEmptyHtml(this._view.webview);
+        if (!targetDocument) {
+            const activeEditor = vscode.window.activeTextEditor;
+            if (!activeEditor) {
+                console.log('No active editor');
+                this.renderEmptyState();
+                return;
+            }
+            targetDocument = activeEditor.document;
+        }
+
+        if (targetDocument.languageId !== 'markdown') {
+            console.log('Document is not markdown:', targetDocument.languageId);
+            if (this._isPinned) {
+                this.clearPin();
+            }
+            this.renderEmptyState();
             return;
         }
 
         console.log('Updating markdown preview');
-        const fileName = activeEditor.document.fileName.split('/').pop() || 'Untitled';
-        this._view.title = fileName;
+        const fileName = path.basename(targetDocument.fileName) || 'Untitled';
+        if (this._isPinned) {
+            this._pinnedFileName = fileName;
+        }
+        this.updateViewTitle(fileName);
 
         this._view.webview.options = {
             enableScripts: true,
-            localResourceRoots: this.getLocalResourceRoots(activeEditor.document.uri)
+            localResourceRoots: this.getLocalResourceRoots(targetDocument.uri)
         };
 
-        const markdownContent = activeEditor.document.getText();
+        const markdownContent = targetDocument.getText();
         const env: MarkdownRenderEnv = {
             webview: this._view.webview,
-            documentUri: activeEditor.document.uri
+            documentUri: targetDocument.uri
         };
         const htmlContent = this._md.render(markdownContent, env);
         this._view.webview.html = this.getWebviewContent(this._view.webview, htmlContent);
+    }
+
+    public async togglePin(): Promise<void> {
+        if (this._isPinned) {
+            this.clearPin();
+            await this.updatePreview();
+            return;
+        }
+
+        const activeEditor = vscode.window.activeTextEditor;
+        if (!activeEditor || activeEditor.document.languageId !== 'markdown') {
+            void vscode.window.showInformationMessage('ピン留めはMarkdownファイルでのみ使用できます。');
+            return;
+        }
+
+        this._isPinned = true;
+        this._pinnedUri = activeEditor.document.uri;
+        this._pinnedFileName = path.basename(activeEditor.document.fileName) || 'Untitled';
+        this.updatePinContext();
+        await this.updatePreview();
+    }
+
+    public isPinnedDocument(uri: vscode.Uri): boolean {
+        return this._isPinned && !!this._pinnedUri && this._pinnedUri.toString() === uri.toString();
+    }
+
+    private clearPin(): void {
+        if (!this._isPinned && !this._pinnedUri) {
+            return;
+        }
+        this._isPinned = false;
+        this._pinnedUri = undefined;
+        this._pinnedFileName = undefined;
+        this.updatePinContext();
+    }
+
+    private updatePinContext(): void {
+        void vscode.commands.executeCommand('setContext', 'markdownPreview:isPinned', this._isPinned);
+    }
+
+    private renderEmptyState(): void {
+        if (!this._view) {
+            return;
+        }
+        this.updateViewTitle();
+        this._view.webview.options = {
+            enableScripts: true,
+            localResourceRoots: this.getLocalResourceRoots()
+        };
+        this._view.webview.html = this.getEmptyHtml(this._view.webview);
+    }
+
+    private updateViewTitle(fileName?: string): void {
+        if (!this._view) {
+            return;
+        }
+
+        if (this._isPinned) {
+            const label = fileName ?? this._pinnedFileName ?? '';
+            this._view.title = label ? `$(pin) ${label}` : '$(pin)';
+            return;
+        }
+
+        this._view.title = fileName ?? '';
     }
 
     private resolveImageSource(src: string, env: MarkdownRenderEnv): string | undefined {
