@@ -135,7 +135,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     public async pin(): Promise<void> {
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor || activeEditor.document.languageId !== 'markdown') {
-            void vscode.window.showInformationMessage('ピン留めはMarkdownファイルでのみ使用できます。');
+            void vscode.window.showInformationMessage('Pinning is only available for Markdown files.');
             return;
         }
 
@@ -287,7 +287,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
     private getWebviewContent(webview: vscode.Webview, htmlContent: string): string {
         return `<!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -384,7 +384,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
     private getEmptyHtml(webview: vscode.Webview): string {
         return `<!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
