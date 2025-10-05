@@ -20,18 +20,37 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.pin', () => {
+            void provider.pin();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.unpin', () => {
+            void provider.unpin();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.togglePin', () => {
+            void provider.togglePin();
+        })
+    );
+
     // Listen for active editor changes
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(() => {
-            provider.updatePreview();
+            void provider.updatePreview();
         })
     );
 
     // Listen for document changes
     context.subscriptions.push(
         vscode.workspace.onDidChangeTextDocument((event) => {
-            if (event.document === vscode.window.activeTextEditor?.document) {
-                provider.updatePreview();
+            const activeDocument = vscode.window.activeTextEditor?.document;
+            if (event.document === activeDocument || provider.isPinnedDocument(event.document.uri)) {
+                void provider.updatePreview();
             }
         })
     );
