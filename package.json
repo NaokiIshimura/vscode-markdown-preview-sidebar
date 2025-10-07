@@ -1,9 +1,9 @@
 {
   "name": "markdown-previewer-in-extension-panel",
   "publisher": "nacn",
-  "displayName": "Markdown Preview in Extension Panel",
-  "description": "Display markdown preview in extension panel",
-  "version": "0.0.8",
+  "displayName": "Markdown Preview in Extension Area",
+  "description": "Display markdown preview in sidebar or panel",
+  "version": "0.0.9",
   "icon": "assets/icon-128.png",
   "engines": {
     "vscode": "^1.74.0"
