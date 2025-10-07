@@ -1,8 +1,8 @@
 {
   "name": "markdown-previewer-in-extension-panel",
   "publisher": "nacn",
-  "displayName": "Markdown Preview in Extension Panel",
-  "description": "Display markdown preview in extension panel",
+  "displayName": "Markdown Preview in Extension Area",
+  "description": "Display markdown preview in sidebar or panel",
   "version": "0.0.7",
   "icon": "assets/icon-128.png",
   "engines": {
