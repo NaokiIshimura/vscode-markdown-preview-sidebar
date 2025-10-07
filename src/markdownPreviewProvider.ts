@@ -15,6 +15,8 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     private _pinnedUri?: vscode.Uri;
     private _pinnedFileName?: string;
     private _canPin = false;
+    private _currentPreviewUri?: vscode.Uri;
+    private _canEdit = false;
 
     constructor(private readonly _extensionUri: vscode.Uri) {
         this._md = new MarkdownIt({
@@ -56,6 +58,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         };
 
         this.updateCanPinContext();
+        this.updateCanEditContext();
         this.updatePinContext();
         void this.updatePreview();
     }
@@ -86,6 +89,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             if (!activeEditor) {
                 console.log('No active editor');
                 this.setCanPin(false);
+                this.setCanEdit(false);
                 this.renderEmptyState();
                 return;
             }
@@ -98,6 +102,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
                 this.clearPin();
             }
             this.setCanPin(false);
+            this.setCanEdit(false);
             this.renderEmptyState();
             return;
         }
@@ -108,6 +113,8 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             this._pinnedFileName = fileName;
         }
         this.updateViewTitle(fileName);
+        this._currentPreviewUri = targetDocument.uri;
+        this.updateEditAvailability(targetDocument.uri);
 
         this._view.webview.options = {
             enableScripts: true,
@@ -167,6 +174,8 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         this._isPinned = false;
         this._pinnedUri = undefined;
         this._pinnedFileName = undefined;
+        this._currentPreviewUri = undefined;
+        this.setCanEdit(false);
         this.updatePinContext();
     }
 
@@ -186,6 +195,29 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         void vscode.commands.executeCommand('setContext', 'markdownPreview:canPin', this._canPin);
     }
 
+    private setCanEdit(value: boolean): void {
+        if (this._canEdit === value) {
+            return;
+        }
+        this._canEdit = value;
+        this.updateCanEditContext();
+    }
+
+    private updateCanEditContext(): void {
+        void vscode.commands.executeCommand('setContext', 'markdownPreview:canEdit', this._canEdit);
+    }
+
+    private updateEditAvailability(targetDocumentUri?: vscode.Uri): void {
+        if (!targetDocumentUri) {
+            this.setCanEdit(false);
+            return;
+        }
+
+        const activeUri = vscode.window.activeTextEditor?.document.uri;
+        const isDifferent = !activeUri || activeUri.toString() !== targetDocumentUri.toString();
+        this.setCanEdit(isDifferent);
+    }
+
     private renderEmptyState(): void {
         if (!this._view) {
             return;
@@ -196,7 +228,24 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             localResourceRoots: this.getLocalResourceRoots()
         };
         this.setCanPin(false);
+        this.setCanEdit(false);
+        this._currentPreviewUri = undefined;
         this._view.webview.html = this.getEmptyHtml(this._view.webview);
+    }
+
+    public async edit(): Promise<void> {
+        if (!this._currentPreviewUri) {
+            void vscode.window.showInformationMessage('No Markdown preview available to edit.');
+            return;
+        }
+
+        try {
+            const document = await vscode.workspace.openTextDocument(this._currentPreviewUri);
+            await vscode.window.showTextDocument(document, { preview: false });
+        } catch (error) {
+            console.warn('Failed to open document for editing:', error);
+            void vscode.window.showErrorMessage('Unable to open the Markdown document for editing.');
+        }
     }
 
     private updateViewTitle(fileName?: string): void {

@@ -21,6 +21,12 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.edit', () => {
+            void provider.edit();
+        })
+    );
+
+    context.subscriptions.push(
         vscode.commands.registerCommand('markdownPreview.pin', () => {
             void provider.pin();
         })

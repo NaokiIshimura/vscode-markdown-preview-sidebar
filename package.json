@@ -3,7 +3,7 @@
   "publisher": "nacn",
   "displayName": "Markdown Preview in Extension Area",
   "description": "Display markdown preview in sidebar or panel",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "icon": "assets/icon-128.png",
   "engines": {
     "vscode": "^1.74.0"
@@ -43,6 +43,12 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "markdownPreview.edit",
+        "title": "Edit",
+        "icon": "$(edit)",
+        "enablement": "markdownPreview:canEdit"
+      },
+      {
         "command": "markdownPreview.pin",
         "title": "Pin",
         "icon": "$(pin)",
@@ -60,6 +66,11 @@
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "markdownPreview.edit",
+          "when": "view == markdownPreview && markdownPreview:canEdit",
+          "group": "navigation@0"
+        },
         {
           "command": "markdownPreview.pin",
           "when": "view == markdownPreview && markdownPreview:canPin && !markdownPreview:isPinned",
