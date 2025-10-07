@@ -1,4 +1,4 @@
-# Markdown Previewer in Extension Panel
+# Markdown Previewer in Extension Area
 
 VS Code のサイドバーに Markdown プレビューを固定表示できる拡張機能です。執筆中のノートやドキュメントを常に視界に入れながら編集できます。
 

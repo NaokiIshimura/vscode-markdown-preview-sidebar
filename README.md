@@ -1,8 +1,8 @@
-# Markdown Previewer in Extension Panel
+# Markdown Previewer in Extension Area
+
+Display markdown preview in sidebar or panel.
 
 ![demo](assets/demo.gif)
-
-Display markdown preview in extension panel.
 
 ## Features
 - Lightweight Markdown preview that stays pinned to the VS Code sidebar or panel
