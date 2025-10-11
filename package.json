@@ -106,37 +106,37 @@
         {
           "command": "markdownPreview.pin",
           "when": "view == markdownPreview && markdownPreview:canPin && !markdownPreview:isPinned",
-          "group": "navigation"
+          "group": "navigation@1"
         },
         {
           "command": "markdownPreview.unpin",
           "when": "view == markdownPreview && markdownPreview:isPinned",
-          "group": "navigation"
-        },
-        {
-          "command": "markdownPreview.refresh",
-          "when": "view == markdownPreview",
           "group": "navigation@1"
-        },
-        {
-          "command": "markdownPreview.zoomOut",
-          "when": "view == markdownPreview",
-          "group": "navigation@2"
-        },
-        {
-          "command": "markdownPreview.resetZoom",
-          "when": "view == markdownPreview",
-          "group": "navigation@3"
         },
         {
           "command": "markdownPreview.zoomIn",
           "when": "view == markdownPreview",
+          "group": "navigation@2"
+        },
+        {
+          "command": "markdownPreview.zoomOut",
+          "when": "view == markdownPreview",
+          "group": "navigation@3"
+        },
+        {
+          "command": "markdownPreview.resetZoom",
+          "when": "view == markdownPreview",
           "group": "navigation@4"
+        },
+        {
+          "command": "markdownPreview.refresh",
+          "when": "view == markdownPreview",
+          "group": "navigation@5"
         },
         {
           "command": "markdownPreview.openSettings",
           "when": "view == markdownPreview",
-          "group": "navigation@5"
+          "group": "navigation@6"
         }
       ]
     }
