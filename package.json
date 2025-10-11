@@ -18,6 +18,18 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Markdown Preview in Extension Area",
+      "properties": {
+        "markdownPreview.defaultZoomLevel": {
+          "type": "number",
+          "default": 100,
+          "minimum": 50,
+          "maximum": 200,
+          "description": "Default zoom level for markdown preview (50-200%)"
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -77,6 +89,11 @@
         "command": "markdownPreview.resetZoom",
         "title": "Reset Zoom",
         "icon": "$(search-stop)"
+      },
+      {
+        "command": "markdownPreview.openSettings",
+        "title": "Open Zoom Settings",
+        "icon": "$(settings-gear)"
       }
     ],
     "menus": {
@@ -115,6 +132,11 @@
           "command": "markdownPreview.zoomIn",
           "when": "view == markdownPreview",
           "group": "navigation@4"
+        },
+        {
+          "command": "markdownPreview.openSettings",
+          "when": "view == markdownPreview",
+          "group": "navigation@5"
         }
       ]
     }
