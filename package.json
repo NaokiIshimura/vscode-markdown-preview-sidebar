@@ -3,7 +3,7 @@
   "publisher": "nacn",
   "displayName": "Markdown Preview in Extension Area",
   "description": "Display markdown preview in sidebar or panel",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "icon": "assets/icon-128.png",
   "engines": {
     "vscode": "^1.74.0"
@@ -62,6 +62,21 @@
       {
         "command": "markdownPreview.togglePin",
         "title": "Toggle Pin"
+      },
+      {
+        "command": "markdownPreview.zoomIn",
+        "title": "Zoom In",
+        "icon": "$(zoom-in)"
+      },
+      {
+        "command": "markdownPreview.zoomOut",
+        "title": "Zoom Out",
+        "icon": "$(zoom-out)"
+      },
+      {
+        "command": "markdownPreview.resetZoom",
+        "title": "Reset Zoom",
+        "icon": "$(search-stop)"
       }
     ],
     "menus": {
@@ -85,6 +100,21 @@
           "command": "markdownPreview.refresh",
           "when": "view == markdownPreview",
           "group": "navigation@1"
+        },
+        {
+          "command": "markdownPreview.zoomOut",
+          "when": "view == markdownPreview",
+          "group": "navigation@2"
+        },
+        {
+          "command": "markdownPreview.resetZoom",
+          "when": "view == markdownPreview",
+          "group": "navigation@3"
+        },
+        {
+          "command": "markdownPreview.zoomIn",
+          "when": "view == markdownPreview",
+          "group": "navigation@4"
         }
       ]
     }

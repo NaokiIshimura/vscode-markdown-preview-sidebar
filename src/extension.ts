@@ -44,6 +44,24 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.zoomIn', () => {
+            provider.zoomIn();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.zoomOut', () => {
+            provider.zoomOut();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.resetZoom', () => {
+            provider.resetZoom();
+        })
+    );
+
     // Listen for active editor changes
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(() => {
