@@ -17,8 +17,14 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     private _canPin = false;
     private _currentPreviewUri?: vscode.Uri;
     private _canEdit = false;
+    private _zoomLevel: number; // ズームレベル(%)
+    private readonly _minZoom = 50; // 最小ズームレベル
+    private readonly _maxZoom = 200; // 最大ズームレベル
+    private readonly _zoomStep = 10; // ズームのステップ
 
     constructor(private readonly _extensionUri: vscode.Uri) {
+        // 設定からデフォルトズームレベルを読み込む
+        this._zoomLevel = this.getDefaultZoomLevel();
         this._md = new MarkdownIt({
             html: true,
             linkify: true,
@@ -248,6 +254,41 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         }
     }
 
+    public zoomIn(): void {
+        if (this._zoomLevel < this._maxZoom) {
+            this._zoomLevel = Math.min(this._zoomLevel + this._zoomStep, this._maxZoom);
+            void this.updatePreview();
+        }
+    }
+
+    public zoomOut(): void {
+        if (this._zoomLevel > this._minZoom) {
+            this._zoomLevel = Math.max(this._zoomLevel - this._zoomStep, this._minZoom);
+            void this.updatePreview();
+        }
+    }
+
+    public resetZoom(): void {
+        const defaultZoom = this.getDefaultZoomLevel();
+        if (this._zoomLevel !== defaultZoom) {
+            this._zoomLevel = defaultZoom;
+            void this.updatePreview();
+        }
+    }
+
+    private getDefaultZoomLevel(): number {
+        const config = vscode.workspace.getConfiguration('markdownPreview');
+        const defaultZoom = config.get<number>('defaultZoomLevel', 100);
+        // 設定値が範囲外の場合は制限内に収める
+        return Math.max(this._minZoom, Math.min(this._maxZoom, defaultZoom));
+    }
+
+    public onConfigurationChanged(): void {
+        // 設定が変更された場合、現在のズームレベルをデフォルト値にリセット
+        this._zoomLevel = this.getDefaultZoomLevel();
+        void this.updatePreview();
+    }
+
     private updateViewTitle(fileName?: string): void {
         if (!this._view) {
             return;
@@ -353,6 +394,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     }
 
     private getWebviewContent(webview: vscode.Webview, htmlContent: string): string {
+        const fontSize = this._zoomLevel / 100;
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -368,6 +410,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             background-color: var(--vscode-editor-background);
             padding: 16px;
             margin: 0;
+            font-size: ${fontSize}em;
         }
         
         h1, h2, h3, h4, h5, h6 {
