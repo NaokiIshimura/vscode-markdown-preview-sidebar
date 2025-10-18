@@ -7,6 +7,8 @@ interface MarkdownRenderEnv {
     documentUri?: vscode.Uri;
 }
 
+type PreviewTheme = 'light' | 'dark';
+
 export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'markdownPreview';
     private _view?: vscode.WebviewView;
@@ -17,13 +19,21 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     private _canPin = false;
     private _currentPreviewUri?: vscode.Uri;
     private _canEdit = false;
+    private _theme: PreviewTheme;
+    private _zoomLevel: number;
+    private readonly _minZoom = 50;
+    private readonly _maxZoom = 200;
+    private readonly _zoomStep = 10;
 
     constructor(private readonly _extensionUri: vscode.Uri) {
+        this._zoomLevel = this.getDefaultZoomLevel();
         this._md = new MarkdownIt({
             html: true,
             linkify: true,
             typographer: true
         });
+        this._theme = this.getInitialTheme();
+        this.updateThemeContext();
 
         const defaultImageRender = this._md.renderer.rules.image ?? ((tokens, idx, options, env, self) => {
             return self.renderToken(tokens, idx, options);
@@ -65,6 +75,30 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
     public refresh() {
         void this.updatePreview();
+    }
+
+    public useLightTheme(): void {
+        this.setTheme('light');
+    }
+
+    public useDarkTheme(): void {
+        this.setTheme('dark');
+    }
+
+    public zoomIn(): void {
+        this.applyZoomChange(this._zoomLevel + this._zoomStep);
+    }
+
+    public zoomOut(): void {
+        this.applyZoomChange(this._zoomLevel - this._zoomStep);
+    }
+
+    public resetZoom(): void {
+        this.applyZoomChange(this.getDefaultZoomLevel());
+    }
+
+    public onConfigurationChanged(): void {
+        this.applyZoomChange(this.getDefaultZoomLevel(), true);
     }
 
     public async updatePreview(): Promise<void> {
@@ -233,6 +267,53 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         this._view.webview.html = this.getEmptyHtml(this._view.webview);
     }
 
+    private applyZoomChange(targetZoom: number, forceUpdate = false): void {
+        const clamped = this.clampZoom(targetZoom);
+        if (!forceUpdate && this._zoomLevel === clamped) {
+            return;
+        }
+        this._zoomLevel = clamped;
+        void this.updatePreview();
+    }
+
+    private clampZoom(value: number): number {
+        if (Number.isNaN(value)) {
+            return this.getDefaultZoomLevel();
+        }
+        return Math.max(this._minZoom, Math.min(this._maxZoom, value));
+    }
+
+    private setTheme(theme: PreviewTheme): void {
+        if (this._theme === theme) {
+            return;
+        }
+        this._theme = theme;
+        this.updateThemeContext();
+        void this.updatePreview();
+    }
+
+    private getInitialTheme(): PreviewTheme {
+        const kind = vscode.window.activeColorTheme.kind;
+        if (kind === vscode.ColorThemeKind.Dark || kind === vscode.ColorThemeKind.HighContrast) {
+            return 'dark';
+        }
+        return 'light';
+    }
+
+    private updateThemeContext(): void {
+        void vscode.commands.executeCommand('setContext', 'markdownPreview:isDarkTheme', this._theme === 'dark');
+    }
+
+    private getThemeClass(): string {
+        return this._theme === 'dark' ? 'theme-dark' : 'theme-light';
+    }
+
+    private getDefaultZoomLevel(): number {
+        const config = vscode.workspace.getConfiguration('markdownPreview');
+        const defaultZoom = config.get<number>('defaultZoomLevel', 100);
+        return Math.max(this._minZoom, Math.min(this._maxZoom, defaultZoom));
+    }
+
     public async edit(): Promise<void> {
         if (!this._currentPreviewUri) {
             void vscode.window.showInformationMessage('No Markdown preview available to edit.');
@@ -353,6 +434,9 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     }
 
     private getWebviewContent(webview: vscode.Webview, htmlContent: string): string {
+        const themeClass = this.getThemeClass();
+        const colorScheme = this._theme === 'dark' ? 'dark' : 'light';
+        const fontSize = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoomLevel)) / 100;
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -361,35 +445,66 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: http: data:; style-src ${webview.cspSource} 'unsafe-inline';">
     <title>Markdown Preview</title>
     <style>
+        :root {
+            color-scheme: ${colorScheme};
+        }
+
+        body.theme-light {
+            --md-background: #ffffff;
+            --md-foreground: #1e1e1e;
+            --md-heading-border: #d0d4d9;
+            --md-code-background: #f5f7fa;
+            --md-code-foreground: #1e1e1e;
+            --md-quote-border: #c8ccd0;
+            --md-quote-background: #f0f3f6;
+            --md-table-border: #d0d4d9;
+            --md-table-header-background: #f5f7fa;
+            --md-link: #115ea3;
+        }
+
+        body.theme-dark {
+            --md-background: #1e1e1e;
+            --md-foreground: #d4d4d4;
+            --md-heading-border: #303030;
+            --md-code-background: #252526;
+            --md-code-foreground: #dcdcdc;
+            --md-quote-border: #3f3f46;
+            --md-quote-background: #252526;
+            --md-table-border: #3f3f46;
+            --md-table-header-background: #2d2d2d;
+            --md-link: #3794ff;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: var(--vscode-foreground);
-            background-color: var(--vscode-editor-background);
+            color: var(--md-foreground);
+            background-color: var(--md-background);
             padding: 16px;
             margin: 0;
+            font-size: ${fontSize}em;
         }
         
         h1, h2, h3, h4, h5, h6 {
-            color: var(--vscode-foreground);
+            color: var(--md-foreground);
             margin-top: 24px;
             margin-bottom: 16px;
         }
         
-        h1 { border-bottom: 1px solid var(--vscode-textSeparator-foreground); }
-        h2 { border-bottom: 1px solid var(--vscode-textSeparator-foreground); }
+        h1 { border-bottom: 1px solid var(--md-heading-border); }
+        h2 { border-bottom: 1px solid var(--md-heading-border); }
         
         code {
-            background-color: var(--vscode-textCodeBlock-background);
-            color: var(--vscode-textPreformat-foreground);
+            background-color: var(--md-code-background);
+            color: var(--md-code-foreground);
             padding: 2px 4px;
             border-radius: 3px;
             font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
         }
         
         pre {
-            background-color: var(--vscode-textCodeBlock-background);
-            color: var(--vscode-textPreformat-foreground);
+            background-color: var(--md-code-background);
+            color: var(--md-code-foreground);
             padding: 16px;
             border-radius: 6px;
             overflow-x: auto;
@@ -397,8 +512,8 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         }
         
         blockquote {
-            border-left: 4px solid var(--vscode-textBlockQuote-border);
-            background-color: var(--vscode-textBlockQuote-background);
+            border-left: 4px solid var(--md-quote-border);
+            background-color: var(--md-quote-background);
             margin: 16px 0;
             padding: 8px 16px;
         }
@@ -410,18 +525,18 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         }
         
         th, td {
-            border: 1px solid var(--vscode-textSeparator-foreground);
+            border: 1px solid var(--md-table-border);
             padding: 8px 12px;
             text-align: left;
         }
         
         th {
-            background-color: var(--vscode-textCodeBlock-background);
+            background-color: var(--md-table-header-background);
             font-weight: bold;
         }
         
         a {
-            color: var(--vscode-textLink-foreground);
+            color: var(--md-link);
             text-decoration: none;
         }
         
@@ -443,13 +558,16 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         }
     </style>
 </head>
-<body>
+<body class="${themeClass}">
     ${htmlContent}
 </body>
 </html>`;
     }
 
     private getEmptyHtml(webview: vscode.Webview): string {
+        const themeClass = this.getThemeClass();
+        const colorScheme = this._theme === 'dark' ? 'dark' : 'light';
+        const fontSize = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoomLevel)) / 100;
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -458,17 +576,32 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: http: data:; style-src ${webview.cspSource} 'unsafe-inline';">
     <title>Markdown Preview</title>
     <style>
+        :root {
+            color-scheme: ${colorScheme};
+        }
+
+        body.theme-light {
+            --md-background: #ffffff;
+            --md-foreground: #4a5568;
+        }
+
+        body.theme-dark {
+            --md-background: #1e1e1e;
+            --md-foreground: #a0aec0;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: var(--vscode-descriptionForeground);
-            background-color: var(--vscode-editor-background);
+            color: var(--md-foreground);
+            background-color: var(--md-background);
             padding: 16px;
             margin: 0;
             text-align: center;
+            font-size: ${fontSize}em;
         }
     </style>
 </head>
-<body>
+<body class="${themeClass}">
     <p>Open a Markdown file to display the preview.</p>
 </body>
 </html>`;

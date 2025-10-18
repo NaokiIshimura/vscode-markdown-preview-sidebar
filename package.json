@@ -1,106 +1,178 @@
 {
-  "name": "markdown-previewer-in-extension-panel",
-  "publisher": "nacn",
-  "displayName": "Markdown Preview in Extension Area",
-  "description": "Display markdown preview in sidebar or panel",
-  "version": "0.0.9",
-  "icon": "assets/icon-128.png",
-  "engines": {
-    "vscode": "^1.74.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/NaokiIshimura/vscode-markdown-previewer-in-extension-panel.git"
-  },
-  "activationEvents": [],
-  "main": "./out/extension.js",
-  "contributes": {
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "markdownPreviewContainer",
-          "title": "Markdown",
-          "icon": "$(markdown)"
-        }
-      ]
+    "name": "markdown-previewer-in-extension-panel",
+    "publisher": "nacn",
+    "displayName": "Markdown Preview in Extension Area",
+    "description": "Display markdown preview in sidebar or panel",
+    "version": "0.1.1",
+    "icon": "assets/icon-128.png",
+    "engines": {
+        "vscode": "^1.74.0"
     },
-    "views": {
-      "markdownPreviewContainer": [
-        {
-          "id": "markdownPreview",
-          "name": "",
-          "type": "webview"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "markdownPreview.refresh",
-        "title": "Refresh",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "markdownPreview.edit",
-        "title": "Edit",
-        "icon": "$(edit)",
-        "enablement": "markdownPreview:canEdit"
-      },
-      {
-        "command": "markdownPreview.pin",
-        "title": "Pin",
-        "icon": "$(pin)",
-        "enablement": "markdownPreview:canPin"
-      },
-      {
-        "command": "markdownPreview.unpin",
-        "title": "Unpin",
-        "icon": "$(pinned)"
-      },
-      {
-        "command": "markdownPreview.togglePin",
-        "title": "Toggle Pin"
-      }
+    "categories": [
+        "Other"
     ],
-    "menus": {
-      "view/title": [
-        {
-          "command": "markdownPreview.edit",
-          "when": "view == markdownPreview && markdownPreview:canEdit",
-          "group": "navigation@0"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NaokiIshimura/vscode-markdown-previewer-in-extension-panel.git"
+    },
+    "activationEvents": [],
+    "main": "./out/extension.js",
+    "contributes": {
+        "configuration": {
+            "title": "Markdown Preview in Extension Area",
+            "properties": {
+                "markdownPreview.defaultZoomLevel": {
+                    "type": "number",
+                    "default": 100,
+                    "minimum": 50,
+                    "maximum": 200,
+                    "description": "Default zoom level for markdown preview (50-200%)"
+                }
+            }
         },
-        {
-          "command": "markdownPreview.pin",
-          "when": "view == markdownPreview && markdownPreview:canPin && !markdownPreview:isPinned",
-          "group": "navigation"
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "markdownPreviewContainer",
+                    "title": "Markdown",
+                    "icon": "$(markdown)"
+                }
+            ]
         },
-        {
-          "command": "markdownPreview.unpin",
-          "when": "view == markdownPreview && markdownPreview:isPinned",
-          "group": "navigation"
+        "views": {
+            "markdownPreviewContainer": [
+                {
+                    "id": "markdownPreview",
+                    "name": "",
+                    "type": "webview"
+                }
+            ]
         },
-        {
-          "command": "markdownPreview.refresh",
-          "when": "view == markdownPreview",
-          "group": "navigation@1"
+        "commands": [
+            {
+                "command": "markdownPreview.refresh",
+                "title": "Refresh",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "markdownPreview.edit",
+                "title": "Edit",
+                "icon": "$(edit)",
+                "enablement": "markdownPreview:canEdit"
+            },
+            {
+                "command": "markdownPreview.pin",
+                "title": "Pin",
+                "icon": "$(pin)",
+                "enablement": "markdownPreview:canPin"
+            },
+            {
+                "command": "markdownPreview.unpin",
+                "title": "Unpin",
+                "icon": "$(pinned)"
+            },
+            {
+                "command": "markdownPreview.togglePin",
+                "title": "Toggle Pin"
+            },
+            {
+                "command": "markdownPreview.useLightTheme",
+                "title": "Use Light Theme",
+                "icon": "$(sun)"
+            },
+            {
+                "command": "markdownPreview.useDarkTheme",
+                "title": "Use Dark Theme",
+                "icon": "$(moon)"
+            },
+            {
+                "command": "markdownPreview.zoomIn",
+                "title": "Zoom In",
+                "icon": "$(zoom-in)"
+            },
+            {
+                "command": "markdownPreview.zoomOut",
+                "title": "Zoom Out",
+                "icon": "$(zoom-out)"
+            },
+            {
+                "command": "markdownPreview.resetZoom",
+                "title": "Reset Zoom",
+                "icon": "$(search-stop)"
+            },
+            {
+                "command": "markdownPreview.openSettings",
+                "title": "Open Zoom Settings",
+                "icon": "$(settings-gear)"
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "markdownPreview.edit",
+                    "when": "view == markdownPreview && markdownPreview:canEdit",
+                    "group": "navigation@0"
+                },
+                {
+                    "command": "markdownPreview.pin",
+                    "when": "view == markdownPreview && markdownPreview:canPin && !markdownPreview:isPinned",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "markdownPreview.unpin",
+                    "when": "view == markdownPreview && markdownPreview:isPinned",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "markdownPreview.refresh",
+                    "when": "view == markdownPreview",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "markdownPreview.useDarkTheme",
+                    "when": "view == markdownPreview && !markdownPreview:isDarkTheme",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "markdownPreview.useLightTheme",
+                    "when": "view == markdownPreview && markdownPreview:isDarkTheme",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "markdownPreview.zoomIn",
+                    "when": "view == markdownPreview",
+                    "group": "navigation@4"
+                },
+                {
+                    "command": "markdownPreview.zoomOut",
+                    "when": "view == markdownPreview",
+                    "group": "navigation@5"
+                },
+                {
+                    "command": "markdownPreview.resetZoom",
+                    "when": "view == markdownPreview",
+                    "group": "navigation@6"
+                },
+                {
+                    "command": "markdownPreview.openSettings",
+                    "when": "view == markdownPreview",
+                    "group": "navigation@7"
+                }
+            ]
         }
-      ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/markdown-it": "^14.1.2",
+        "@types/node": "16.x",
+        "@types/vscode": "^1.74.0",
+        "typescript": "^4.9.4"
+    },
+    "dependencies": {
+        "markdown-it": "^13.0.1"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
-  },
-  "devDependencies": {
-    "@types/markdown-it": "^14.1.2",
-    "@types/node": "16.x",
-    "@types/vscode": "^1.74.0",
-    "typescript": "^4.9.4"
-  },
-  "dependencies": {
-    "markdown-it": "^13.0.1"
-  }
 }

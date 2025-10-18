@@ -13,7 +13,6 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    // Register refresh command
     context.subscriptions.push(
         vscode.commands.registerCommand('markdownPreview.refresh', () => {
             provider.refresh();
@@ -44,6 +43,42 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.useLightTheme', () => {
+            provider.useLightTheme();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.useDarkTheme', () => {
+            provider.useDarkTheme();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.zoomIn', () => {
+            provider.zoomIn();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.zoomOut', () => {
+            provider.zoomOut();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.resetZoom', () => {
+            provider.resetZoom();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.openSettings', () => {
+            void vscode.commands.executeCommand('workbench.action.openSettings', 'markdownPreview.defaultZoomLevel');
+        })
+    );
+
     // Listen for active editor changes
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(() => {
@@ -57,6 +92,15 @@ export function activate(context: vscode.ExtensionContext) {
             const activeDocument = vscode.window.activeTextEditor?.document;
             if (event.document === activeDocument || provider.isPinnedDocument(event.document.uri)) {
                 void provider.updatePreview();
+            }
+        })
+    );
+
+    // Listen for configuration changes
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration((event) => {
+            if (event.affectsConfiguration('markdownPreview.defaultZoomLevel')) {
+                provider.onConfigurationChanged();
             }
         })
     );
