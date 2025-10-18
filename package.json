@@ -3,7 +3,7 @@
   "publisher": "nacn",
   "displayName": "Markdown Preview in Extension Area",
   "description": "Display markdown preview in sidebar or panel",
-  "version": "0.0.9",
+  "version": "0.1.1",
   "icon": "assets/icon-128.png",
   "engines": {
     "vscode": "^1.74.0"
@@ -62,6 +62,16 @@
       {
         "command": "markdownPreview.togglePin",
         "title": "Toggle Pin"
+      },
+      {
+        "command": "markdownPreview.useLightTheme",
+        "title": "Use Light Theme",
+        "icon": "$(sun)"
+      },
+      {
+        "command": "markdownPreview.useDarkTheme",
+        "title": "Use Dark Theme",
+        "icon": "$(moon)"
       }
     ],
     "menus": {
@@ -85,6 +95,16 @@
           "command": "markdownPreview.refresh",
           "when": "view == markdownPreview",
           "group": "navigation@1"
+        },
+        {
+          "command": "markdownPreview.useDarkTheme",
+          "when": "view == markdownPreview && !markdownPreview:isDarkTheme",
+          "group": "navigation@2"
+        },
+        {
+          "command": "markdownPreview.useLightTheme",
+          "when": "view == markdownPreview && markdownPreview:isDarkTheme",
+          "group": "navigation@2"
         }
       ]
     }

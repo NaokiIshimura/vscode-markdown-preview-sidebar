@@ -44,6 +44,18 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.useLightTheme', () => {
+            provider.useLightTheme();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownPreview.useDarkTheme', () => {
+            provider.useDarkTheme();
+        })
+    );
+
     // Listen for active editor changes
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(() => {
