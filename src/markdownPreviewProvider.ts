@@ -20,8 +20,13 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     private _currentPreviewUri?: vscode.Uri;
     private _canEdit = false;
     private _theme: PreviewTheme;
+    private _zoomLevel: number;
+    private readonly _minZoom = 50;
+    private readonly _maxZoom = 200;
+    private readonly _zoomStep = 10;
 
     constructor(private readonly _extensionUri: vscode.Uri) {
+        this._zoomLevel = this.getDefaultZoomLevel();
         this._md = new MarkdownIt({
             html: true,
             linkify: true,
@@ -78,6 +83,22 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
     public useDarkTheme(): void {
         this.setTheme('dark');
+    }
+
+    public zoomIn(): void {
+        this.applyZoomChange(this._zoomLevel + this._zoomStep);
+    }
+
+    public zoomOut(): void {
+        this.applyZoomChange(this._zoomLevel - this._zoomStep);
+    }
+
+    public resetZoom(): void {
+        this.applyZoomChange(this.getDefaultZoomLevel());
+    }
+
+    public onConfigurationChanged(): void {
+        this.applyZoomChange(this.getDefaultZoomLevel(), true);
     }
 
     public async updatePreview(): Promise<void> {
@@ -246,6 +267,22 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
         this._view.webview.html = this.getEmptyHtml(this._view.webview);
     }
 
+    private applyZoomChange(targetZoom: number, forceUpdate = false): void {
+        const clamped = this.clampZoom(targetZoom);
+        if (!forceUpdate && this._zoomLevel === clamped) {
+            return;
+        }
+        this._zoomLevel = clamped;
+        void this.updatePreview();
+    }
+
+    private clampZoom(value: number): number {
+        if (Number.isNaN(value)) {
+            return this.getDefaultZoomLevel();
+        }
+        return Math.max(this._minZoom, Math.min(this._maxZoom, value));
+    }
+
     private setTheme(theme: PreviewTheme): void {
         if (this._theme === theme) {
             return;
@@ -269,6 +306,12 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
 
     private getThemeClass(): string {
         return this._theme === 'dark' ? 'theme-dark' : 'theme-light';
+    }
+
+    private getDefaultZoomLevel(): number {
+        const config = vscode.workspace.getConfiguration('markdownPreview');
+        const defaultZoom = config.get<number>('defaultZoomLevel', 100);
+        return Math.max(this._minZoom, Math.min(this._maxZoom, defaultZoom));
     }
 
     public async edit(): Promise<void> {
@@ -393,6 +436,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     private getWebviewContent(webview: vscode.Webview, htmlContent: string): string {
         const themeClass = this.getThemeClass();
         const colorScheme = this._theme === 'dark' ? 'dark' : 'light';
+        const fontSize = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoomLevel)) / 100;
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -438,6 +482,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             background-color: var(--md-background);
             padding: 16px;
             margin: 0;
+            font-size: ${fontSize}em;
         }
         
         h1, h2, h3, h4, h5, h6 {
@@ -522,6 +567,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
     private getEmptyHtml(webview: vscode.Webview): string {
         const themeClass = this.getThemeClass();
         const colorScheme = this._theme === 'dark' ? 'dark' : 'light';
+        const fontSize = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoomLevel)) / 100;
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -551,6 +597,7 @@ export class MarkdownPreviewProvider implements vscode.WebviewViewProvider {
             padding: 16px;
             margin: 0;
             text-align: center;
+            font-size: ${fontSize}em;
         }
     </style>
 </head>
